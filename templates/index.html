@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard analisis dan prediksi kunjungan wisatawan mancanegara Indonesia 2022-2026">
+    <title>VISITOR//PULSE — Dashboard Regresi Wisatawan</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="noise"></div>
+
+    <header class="site-header" id="top">
+        <div class="brand-block">
+            <span class="brand-index">DS/26</span>
+            <div>
+                <p class="eyebrow">UAS DATA SCIENCE • REGRESSION DASHBOARD</p>
+                <h1>VISITOR<span>//</span>PULSE</h1>
+            </div>
+        </div>
+        <div class="header-status">
+            <span class="pulse-dot"></span>
+            <div>
+                <strong>DATA AKTIF</strong>
+                <small id="lastUpdated">Menyiapkan dashboard...</small>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navbar-panel" aria-label="Navigasi dashboard">
+        <strong>VP/NAV</strong>
+        <div class="nav-links">
+            <a href="#overview" class="nav-link active">OVERVIEW</a>
+            <a href="#charts" class="nav-link">CHARTS</a>
+            <a href="#model" class="nav-link">MODEL</a>
+            <a href="#kode" class="nav-link">KODE</a>
+            <a href="#catatan" class="nav-link">CATATAN</a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero-grid" id="overview">
+            <div class="hero-copy">
+                <div class="hero-kicker">01 / NATIONAL ARRIVAL INTELLIGENCE</div>
+                <h2>Analisis time series kunjungan<br><mark>forecast regresi fleksibel.</mark></h2>
+                <p>
+                    Dashboard memakai dataset 2022–2026. Pilih model regresi, filter tahun aktual,
+                    lalu tentukan tahun prediksi sampai maksimal 2100.
+                </p>
+            </div>
+
+            <aside class="command-panel">
+                <div class="panel-label">CONTROL DESK</div>
+
+                <label>
+                    <span>PERIODE AKTUAL</span>
+                    <select id="yearFilter">
+                        <option value="all">Semua tahun</option>
+                        {% for year in years %}
+                        <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    <span>PASPOR / WILAYAH</span>
+                    <input id="entityFilter" list="entityList" value="GRAND TOTAL" autocomplete="off">
+                    <datalist id="entityList">
+                        {% for entity in entities %}
+                        <option value="{{ entity }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </label>
+
+                <label>
+                    <span>MODEL REGRESI</span>
+                    <select id="modelFilter">
+                        {% for model in models %}
+                        <option value="{{ model.value }}">{{ model.label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    <span>TAHUN PREDIKSI</span>
+                    <input id="predictionYear" type="number" min="2026" max="2100" value="2026">
+                </label>
+
+                <div class="command-actions">
+                    <button id="applyFilter" class="btn-primary">TERAPKAN ↗</button>
+                    <button id="resetFilter" class="btn-ghost">RESET</button>
+                </div>
+            </aside>
+        </section>
+
+        <section class="kpi-strip">
+            <article class="kpi-card kpi-main">
+                <span class="kpi-number">01</span>
+                <p>Total kunjungan</p>
+                <strong id="kpiTotal">—</strong>
+                <small id="kpiTotalLabel">Filter aktif</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-number">02</span>
+                <p>Rata-rata bulanan</p>
+                <strong id="kpiAverage">—</strong>
+                <small>Berdasarkan bulan tersedia</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-number">03</span>
+                <p>Puncak kunjungan</p>
+                <strong id="kpiPeak">—</strong>
+                <small id="kpiPeakLabel">—</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-number">04</span>
+                <p id="kpiGrowthTitle">Pertumbuhan YoY</p>
+                <strong id="kpiGrowth">—</strong>
+                <small>Periode sebanding</small>
+            </article>
+            <article class="kpi-card kpi-coverage">
+                <span class="kpi-number">05</span>
+                <p>Kelengkapan data</p>
+                <strong id="kpiCoverage">—</strong>
+                <small id="kpiCoverageLabel">—</small>
+            </article>
+        </section>
+
+        <section class="dashboard-grid" id="charts">
+            <article class="chart-card chart-wide">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">A1</span>
+                        <h3>Trend aktual + proyeksi</h3>
+                    </div>
+                    <p>Garis aktual dan prediksi sesuai model aktif</p>
+                </div>
+                <div id="trendChart" class="chart chart-large"></div>
+            </article>
+
+            <article class="insight-card">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">A2</span>
+                        <h3>Ringkasan regresi</h3>
+                    </div>
+                </div>
+                <div id="insightList" class="insight-list"></div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">B1</span>
+                        <h3>Total per tahun</h3>
+                    </div>
+                    <p>Bar parsial diberi pola berbeda</p>
+                </div>
+                <div id="annualChart" class="chart"></div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">B2</span>
+                        <h3>Pertumbuhan tahunan</h3>
+                    </div>
+                    <p>Perbandingan dengan periode sebanding</p>
+                </div>
+                <div id="growthChart" class="chart"></div>
+            </article>
+
+            <article class="chart-card chart-full">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">C1</span>
+                        <h3>Peta intensitas bulanan</h3>
+                    </div>
+                    <p>Memperlihatkan musim tinggi dan jeda data</p>
+                </div>
+                <div id="heatmapChart" class="chart chart-medium"></div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">C2</span>
+                        <h3>Top 10 paspor</h3>
+                    </div>
+                    <p>Kontributor terbesar pada filter aktif</p>
+                </div>
+                <div id="passportChart" class="chart chart-tall"></div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">C3</span>
+                        <h3>Komposisi wilayah</h3>
+                    </div>
+                    <p>Agregasi kawasan asal paspor</p>
+                </div>
+                <div id="regionChart" class="chart chart-tall"></div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">D1</span>
+                        <h3>Korelasi fitur model</h3>
+                    </div>
+                    <p>Hubungan antar fitur numerik regresi</p>
+                </div>
+                <div id="correlationChart" class="chart"></div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">D2</span>
+                        <h3>Koefisien regresi</h3>
+                    </div>
+                    <p>Bobot intercept dan fitur model</p>
+                </div>
+                <div id="coefficientChart" class="chart"></div>
+            </article>
+
+            <article class="chart-card chart-wide">
+                <div class="card-head">
+                    <div>
+                        <span class="section-code">D3</span>
+                        <h3>Time series aktual dan prediksi</h3>
+                    </div>
+                    <p>Aktual 2022-April 2026 dan forecast sampai tahun pilihan</p>
+                </div>
+                <div id="regressionFitChart" class="chart chart-large"></div>
+            </article>
+        </section>
+
+        <section class="model-section" id="model">
+            <div class="model-intro">
+                <span class="section-code inverse">ML/01</span>
+                <p class="eyebrow light">REGRESSION ENGINE</p>
+                <h3>Model bisa dipilih langsung dari web.</h3>
+                <p id="modelDescription">
+                    Pilih Regresi Linear Sederhana, Regresi Polinomial, atau Regresi Linear Berganda.
+                </p>
+                <div class="model-pill-row">
+                    <span>LINEAR</span>
+                    <span>POLINOMIAL</span>
+                    <span>BERGANDA</span>
+                    <span>MAX 2100</span>
+                </div>
+                <div class="model-metrics">
+                    <div><span>R²</span><strong id="modelR2">—</strong></div>
+                    <div><span>MAE</span><strong id="modelMae">—</strong></div>
+                    <div><span>RMSE</span><strong id="modelRmse">—</strong></div>
+                </div>
+                <div class="formula-box">
+                    <span>PERSAMAAN MODEL</span>
+                    <code id="modelFormula">Memuat persamaan...</code>
+                </div>
+            </div>
+
+            <div class="forecast-board">
+                <div class="forecast-head">
+                    <div>
+                        <span>FORECAST WINDOW</span>
+                        <h3 id="forecastTitle">Mei—Desember 2026</h3>
+                        <small class="forecast-year-note" id="forecastSubtitle">Model aktif: —</small>
+                    </div>
+                    <span class="forecast-badge" id="forecastBadge">8 BULAN</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bulan</th>
+                                <th>Prediksi</th>
+                                <th>Rentang estimasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forecastTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="code-section" id="kode">
+            <div class="code-explain">
+                <span class="section-code">CODE</span>
+                <h3>Potongan kode fungsi prediksi.</h3>
+                <p>
+                    Bagian ini otomatis berubah sesuai model yang dipilih. Isinya menunjukkan fitur yang dipakai,
+                    koefisien hasil training, dan cara menghitung prediksi dari tahun serta bulan.
+                </p>
+                <div class="step-list" id="calculationSteps">
+                    <div>Menunggu data model...</div>
+                </div>
+            </div>
+            <div class="code-box-panel">
+                <pre><code id="codeSnippet">Memuat potongan kode...</code></pre>
+            </div>
+        </section>
+
+        <section class="data-note" id="catatan">
+            <span>CATATAN DATA</span>
+            <p id="dataNote">Memuat catatan...</p>
+        </section>
+    </main>
+
+    <footer>
+        <span>VISITOR//PULSE</span>
+        <p>Dashboard UAS Data Science — Dataset 2022–2026, model regresi manual OLS.</p>
+    </footer>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loader-mark">VP</div>
+        <p>MENYUSUN INSIGHT...</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='vendor/plotly.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
