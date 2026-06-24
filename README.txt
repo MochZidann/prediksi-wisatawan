@@ -1,67 +1,43 @@
-VISITOR//PULSE - UAS DATA SCIENCE REGRESI
+# 📊 Prediksi Wisatawan
 
-Isi project:
-- app.py                         : Backend Flask dan perhitungan regresi manual OLS
-- data/dataset_wisatawan_2022_2026.csv
-- templates/index.html           : Tampilan web
-- static/css/style.css           : UI bawaan + tambahan navbar/model/kode berwarna
-- static/js/dashboard.js         : Interaksi dashboard, dropdown model, chart, forecast, dan syntax highlight
-- static/vendor/plotly.min.js    : Library chart offline
-- requirements.txt
-- pythonanywhere_wsgi.py         : Isi WSGI yang bisa dicopy ke file WSGI PythonAnywhere
-- wsgi.py                        : Entry point WSGI cadangan
-- setup_and_run_windows.bat      : Setup pertama kali + menjalankan web di Windows
-- run_windows.bat                : Menjalankan web di Windows setelah setup selesai
+ 🔗[Prediksi Wisatawan](https://wisatawan.pythonanywhere.com/)
 
-Cara run di Windows:
-1. Extract zip ini.
-2. Klik 2x setup_and_run_windows.bat.
-3. Tunggu install dependency selesai.
-4. Buka browser: http://127.0.0.1:5000
+Projek ini dibangun untuk memprediksi volume kunjungan wisatawan dengan menggunakan pendekatan **Regresi Linear**. Proyek ini menganalisis tren dari data historis untuk mengestimasi jumlah kunjungan, yang berfungsi sebagai instrumen pendukung perencanaan strategis sektor pariwisata.
 
-Cara deploy ke PythonAnywhere:
-1. Upload/extract folder project ke PythonAnywhere, misalnya:
-   /home/USERNAME/visitor_pulse_uas_ready
-2. Buka Bash Console PythonAnywhere.
-3. Masuk ke folder project:
-   cd /home/USERNAME/visitor_pulse_uas_ready
-4. Buat virtualenv sesuai versi Python yang dipilih pada Web tab:
-   mkvirtualenv visitorpulse --python=/usr/bin/python3.10
-5. Install dependency:
-   pip install -r requirements.txt
-6. Buka tab Web > Add a new web app > Manual configuration > pilih Python yang sama.
-7. Isi bagian Virtualenv dengan:
-   /home/USERNAME/.virtualenvs/visitorpulse
-8. Buka file WSGI dari tab Web, lalu isi dengan isi file pythonanywhere_wsgi.py.
-9. Sesuaikan baris project_home jika nama folder berbeda:
-   project_home = Path('/home/USERNAME/visitor_pulse_uas_ready')
-10. Di Static files, tambahkan mapping opsional:
-    URL: /static/
-    Directory: /home/USERNAME/visitor_pulse_uas_ready/static/
-11. Klik Reload pada tab Web.
+## 📈 Sumber Data
 
-Fitur yang sudah dimasukkan:
-1. Dropdown model regresi:
-   - Regresi Linear Sederhana
-   - Regresi Polinomial
-   - Regresi Linear Berganda
-2. Filter periode aktual:
-   - Semua tahun
-   - 2022, 2023, 2024, 2025, 2026
-3. Pilihan tahun prediksi:
-   - Minimal 2026
-   - Maksimal 2100
-4. Prediksi 2026 otomatis Mei-Desember karena data aktual 2026 tersedia sampai April.
-5. Jika memilih 2027-2100, grafik dan tabel prediksi dibuat berurutan dari Mei 2026 sampai Desember tahun pilihan.
-6. Navbar interaktif dengan scroll halus.
-7. Bagian kode di web menampilkan fungsi prediksi tanpa komentar tanda pagar dan tampil berwarna seperti editor kode.
-8. File berantakan seperti .venv, notebook, cache, zip lama, dan data lama tidak dimasukkan.
+* **Data:** Statistik kunjungan wisatawan dari **Badan Pusat Statistik (BPS)**.
+* **Rentang Waktu:** 2022 – 2026.
+* **Karakteristik:** Data mencakup pola kunjungan tahunan yang digunakan untuk melatih model regresi dalam memproyeksikan tren ke depan.
+* **Link:** [Data Kunjungan Wisatawan - BPS](https://www.bps.go.id/id/statistics-table/2/MTQ3MCMy/jumlah-kunjungan-wisatawan-mancanegara-per-bulan-menurut-paspor-yang-dipegang-.html)
 
-Catatan model:
-- Perhitungan regresi memakai rumus manual OLS: beta = (X^T X)^-1 X^T y.
-- Evaluasi kronologis: latih 2022-2024, uji 2025.
-- Model final memakai data aktual tersedia 2022-April 2026.
+## 🛠 Tech Stack
 
-Catatan periode prediksi:
-- Jika tahun prediksi = 2026, sistem menampilkan prediksi Mei sampai Desember saja.
-- Jika tahun prediksi > 2026, misalnya 2027, 2030, atau tahun lain sampai 2100, sistem menampilkan titik prediksi lengkap pada seluruh rentang: Mei-Desember 2026, lalu Januari-Desember untuk setiap tahun sampai tahun pilihan.
+* **Bahasa:** Python
+* **Library:** `pandas`, `numpy`, `scikit-learn` (implementasi regresi), `matplotlib`/`seaborn` (visualisasi).
+
+## 🧠 Pendekatan Teknis
+
+1. **Data Preprocessing:** Pembersihan data BPS, penanganan *outliers*, dan normalisasi format data untuk rentang 2022-2026.
+2. **EDA:** Identifikasi pola musiman dan tren pertumbuhan wisatawan dari data BPS.
+3. **Modeling:** Implementasi **Regresi Linear** untuk memetakan hubungan antara variabel waktu dan volume kunjungan.
+4. **Evaluation:** Validasi model menggunakan MSE dan R-squared ($R^2$) untuk mengukur akurasi garis tren prediksi.
+
+## ⚙️ Cara Menjalankan
+
+1. Clone repositori:
+```bash
+git clone https://github.com/MochZidann/prediksi-wisatawan.git
+
+```
+
+
+2. Install dependensi:
+```bash
+pip install -r requirements.txt
+
+```
+
+3. Eksekusi script/notebook untuk melihat hasil prediksi berbasis data BPS 2022-2026.
+
+---
